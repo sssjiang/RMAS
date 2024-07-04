@@ -203,23 +203,33 @@ $app->get('/get/reference/{id}', function ($request, $response, $args) {
     $nickname = isset($UserInfo['nickname']) ? $UserInfo['nickname'] : null;
 
     // 模拟数据
-    $mockItem =[
-        'source' => 'Source A',
-        'PMID' => 'PMID123456',
-        'ArticleTitle' => 'Title A',
-        'ArticleTitle_html' => '',
-        'AbstractText' => 'Abstract A',
-        'AbstractText_html' => '',
-        'annotation' => json_encode(['labels' => [], 'connections' => []]),
+    $mockItem = [
+        'source' => 'CNKI',
+        'PMID' => 'SJNVA22F2BBDC112BF07C8690102945699E5',
+        'ArticleTitle' => "Test Article Title",
+        'ArticleTitle_html' => null,
+        'AbstractText' => "The present study investigated the antimicrobial properties of medicinal herbs including Scutellariae Radix (SR: dried root of Scutellariae bicalensis Georgi). Among hot-water extracts of medicinal herbs tested in this study, SR extract showed the most potent antimicrobial activity with minimum inhibitory concentration (MIC) of 0.625 mg/mL. In particular, synergistic effects of antimicrobial activity were observed upon combined application of SR and chitooligosaccharide as indicated by MIC of 0.125 mg/mL and FIC (fractional inhibitory concentration) index of 0.45. Thermal stability analysis indicated that the components responsible for antimicrobial activity was stable for 8 months at 45℃. Antimicrobial activity was proven to be effective in foods as well as in cosmetics as comparable to that of the chemical preservatives.",
+        'AbstractText_html' => null,
+        'annotation' => json_encode([
+            'connections' => [],
+            'labels' => [
+                ['id' => 0, 'categoryId' => 0, 'startIndex' => 89, 'endIndex' => 107],
+                ['id' => 1, 'categoryId' => 1, 'startIndex' => 454, 'endIndex' => 474],
+                ['id' => 2, 'categoryId' => 3, 'startIndex' => 358, 'endIndex' => 569],
+                ['id' => 3, 'categoryId' => 4, 'startIndex' => 35, 'endIndex' => 48],
+            ],
+            'maxWidth' => "1899",
+            'synonyms' => []
+        ]),
         'annotation_ner' => json_encode(['labels' => []]),
-        'species' => 'Species A',
-        'herb' => 'Herb A',
-        'hdi_class' => 'Class A',
-        'last_edited_by' => 'User1',
-        'last_edited_at' => '2024-07-01 12:00:00',
-        'extracted_by' => '',
-        'extracted_at' => '',
-        'created_at' => '2024-07-01 12:00:00',
+        'species' => null,
+        'herb' => null,
+        'hdi_class' => 1,
+        'last_edited_by' => 'xiao min',
+        'last_edited_at' => '2021-03-01 10:31:42',
+        'extracted_by' => "\u4e09\u767d\u5bb6\u7684\u5c11\u5e84\u4e3b",
+        'extracted_at' => '2024-07-04 11:07:09',
+        'created_at' => '2020-07-12 09:40:24',
     ];
 
 
