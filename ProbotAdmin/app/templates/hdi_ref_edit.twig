@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>RMAS</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel='stylesheet' id='icon_stylesheet' href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
+    <link href="/css/jquery.loading.min.css" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="/css/jquery.dataTables.min.css"></style> -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/codemirror.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.6.0/css/froala_editor.pkgd.min.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.6.0/css/froala_style.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+    <script src='/js/jquery-1.12.4.min.js'></script>
+    <script src='/js/jsoneditor.min.js'></script>
+    <script src='/js/poplar.js?id=323457'></script>
+    <style>
+        html, body, #container {
+            margin: 0;
+            padding: 0;
+        }
+
+        svg {
+            margin: 10px;
+            padding: 0;
+            width: 1000px;
+        }
+
+        a {
+          color: inherit; /* blue colors for links too */
+          text-decoration: inherit; /* no underline */
+        }
+
+        .poplar-annotation-content,
+        .poplar-annotation-label,
+        .poplar-annotation-title
+        .poplar-annotation-connection {
+            font-family: "Courier New", serif;
+        }
+
+        .poplar-annotation-title {
+            font-size: 16px;
+            font-weight:bold;
+            color: blue;
+        }
+
+        .poplar-annotation-content {
+            font-size: 15px;
+        }
+
+        .poplar-annotation-label {
+            font-size: 10px;
+        }
+
+        .poplar-annotation-connection {
+            font-size: 10px;
+        }
+
+        .poplar-annotation-connection-line.hover-from {
+            stroke: red;
+        }
+
+        .poplar-annotation-connection-line.hover-to {
+            stroke: blue;
+        }
+
+        .poplar-annotation-connection-line.hover {
+            stroke: yellow;
+        }
+        .overflow {
+          white-space: nowrap;                  
+          overflow: hidden;
+          text-overflow: clip ellipsis;
+        }
+        .htmer{  
+            width: 50px;  
+            white-space: nowrap;  
+            overflow: hidden;  
+            text-overflow:ellipsis;      /*兼容IE*/  
+        }
+        .td_width{
+            min-width: 100px;
+        }
+        .wx_head{
+            text-align:right;
+            padding: 1rem 1rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+        .wx_title{
+            float:right;
+        }
+        .input-group-addon {
+            min-width:80px;
+            text-align:left;
+        }
+        .row{
+            padding-bottom:10px;
+        }
+        .badge-info{
+            color:#d0021b;
+            background-color:#f8e71c;
+            text-decoration: none;
+        }
+        .badge-danger{
+            color:#ffffff;
+            background-color:#9b9b9b;
+            text-decoration: none;
+        }
+    </style>
+    <script>
+        var apiColumnSort=(id)=>{
+        var th = $("#colsort"+id);
+        var direct = th.data('direction');
+        if(direct === 'desc'){
+            direct='asc';
+            th.data("direction","asc");
+            th.attr("src","/img/sort_az_ascending.png");
+        }else{
+            direct='desc';
+            th.data("direction","desc");
+            th.attr("src","/img/sort_az_descending.png");
+        }
+        $("#order_by").val(id);
+        $("#direction").val(direct);
+        $("#offset").val('0');
+        $("#tnum").val('');
+        $("#download_pool").submit();
+    };
+    </script>
+</head>
+
+<body>
+    <nav class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">PROBOT</a>
+            </div>
+            <div>
+                <ul class="nav navbar-nav">
+                    <li><a href="/e/dp2/study">STUDY</a></li>
+                    <li><a href="/e/web/news">DP2</a></li>
+                    <li><a href="/b/dt/tasks">DTT</a></li>
+                    <li><a href="/hdi/references">RMAS</a></li>
+                    <li><a href="/docs/">SOPs</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Others
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="http://jupyter.labqr.com/">Jupyter(Japan)</a></li>
+                            <li><a href="http://jup.labqr.com/">Jupyter(Hangzhou)</a></li>
+                            <li><a href="http://openrefine.drugsea.cn/">Openrefine</a></li>
+                            <li class="divider"></li>
+                            <li><a href="http://pms.drugsea.cn/">PMS</a></li>
+                            <li><a href="/search/all">LabQr</a></li>
+                            <li><a href="/b/file/upload">Upload</a></li>
+                            <li class="divider"></li>
+                            <li><a href="/lexicon/drugs">Drug Lexicon</a></li>
+                            <li><a href="/e/cron/task">Cron Taska</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <div class="wx_title">
+                            <img class="wx_head" src="{{ UserInfo.headimgurl }}" />
+                            {{ UserInfo.nickname }} <i class="fa fa-sign-out" aria-hidden="true" onclick="javascript:labqr_logout();"></i>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class='container'>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            RMAS
+                        </h3>
+                    </div>
+                    <div class="panel-body" id="down_search">
+                        <form role='form' id="download_pool" class="form-horizontal" method='GET'>
+                            <input type='hidden' id="offset" name='offset' value='{{offset}}'>
+                            <input type='hidden' id="order_by" name='order_by' value={{params.order_by}}>
+                            <input type='hidden' id="direction" name='direction' value={{params.direction}}>
+                            <input type='hidden' id="tnum" name='tnum' value='{{pg.tnum}}'>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">REF_ID</span>
+                                        <input type="text" id="PMID" name="PMID" class="input-normal form-control" value="{{params.PMID}}">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">Class</span>
+                                        {% set classes={'-1':'ALL','0':'unknown (0)','1':'HDI-related (1)','2':'un-related (2)','3':'related-review (3)','4':'DDI-related','5':'Data for TEST', '6':'HDI-related (TEST)','7':'HDI-unrelated (TEST)'} %}
+                                        <select class="form-control" id="hdi_class" name="hdi_class">
+                                            {% for k,v in classes %}
+                                            {% set selected = '' %}
+                                            {% if k == params.hdi_class %}
+                                            {% set selected = 'selected' %}
+                                            {% endif %}
+                                            <option value="{{k}}" {{ selected }}>{{ v }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">CNN predicted</span>
+                                        {% set classes={'-1':'ALL','0':'unknown (0)','1':'HDI-related (1)','2':'un-related (2)','4':'DDI-related'} %}
+                                        <select class="form-control" id="ai_hdi_class" name="ai_hdi_class">
+                                            {% for k,v in classes %}
+                                            {% set selected = '' %}
+                                            {% if k == params.ai_hdi_class %}
+                                            {% set selected = 'selected' %}
+                                            {% endif %}
+                                            <option value="{{k}}" {{ selected }}>{{ v }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">NaiveBayes predicted</span>
+                                        {% set classes={'-1':'ALL','0':'unknown (0)','1':'HDI-related (1)','2':'un-related (2)','4':'DDI-related'} %}
+                                        <select class="form-control" id="ai_hdi_class_2" name="ai_hdi_class_2">
+                                            {% for k,v in classes %}
+                                            {% set selected = '' %}
+                                            {% if k == params.ai_hdi_class_2 %}
+                                            {% set selected = 'selected' %}
+                                            {% endif %}
+                                            <option value="{{k}}" {{ selected }}>{{ v }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">Last Edited By</span>
+                                        {% set classes={'':'ALL','Danny':'Danny','辉':'辉','Evelyn Ho':'Evelyn Ho','winniecws':'winniecws','飘蓝':'飘蓝','Randy':'张博'} %}
+                                        <select class="form-control" id="last_edited_by" name="last_edited_by">
+                                            {% for k,v in classes %}
+                                            {% set selected = '' %}
+                                            {% if k == params.last_edited_by %}
+                                            {% set selected = 'selected' %}
+                                            {% endif %}
+                                            <option value="{{k}}" {{ selected }}>{{ v }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">Projects</span>
+                                        {% set classes={'':'ALL','0':'No (0)','1':'50herbs (1)','2':'Breast Cancer (2)','3':'Summer Intern (3)'} %}
+                                        <select class="form-control" id="is_50herbs" name="is_50herbs">
+                                            {% for k,v in classes %}
+                                            {% set selected = '' %}
+                                            {% if k == params.is_50herbs %}
+                                            {% set selected = 'selected' %}
+                                            {% endif %}
+                                            <option value="{{k}}" {{ selected }}>{{ v }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">Artical Title</span>
+                                        <input type="text" id="ArticleTitle" name="ArticleTitle" class="input-normal form-control" value="{{params.ArticleTitle}}">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">Abstract</span>
+                                        <input type="text" id="AbstractText" name="AbstractText" class="input-normal form-control" value="{{params.AbstractText}}">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">Source</span>
+                                        {% set classes={'0':'','1':'PubMed','2':'Wanfang','3':'CNKI'} %}
+                                        <select class="form-control" id="source" name="source">
+                                            {% for k,v in classes %}
+                                            {% set selected = '' %}
+                                            {% if params.source == v %}
+                                            {% set selected = 'selected' %}
+                                            {% endif %}
+                                            <option value="{{v}}" {{ selected }}>{{ v }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">DocID</span>
+                                        <input type="text" id="id" name="id"  placeholder="seperate multiple ids by comma" class="input-normal form-control" value="{{params.id}}">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">Mesh Term</span>
+                                        {% set classes={
+                                        '0':'',
+                                        '1':'Herb-Drug Interactions',
+                                        '2':'Drug Interactions',
+                                        '3':'Plant Extracts',
+                                        '4':'Plant Preparations',
+                                        '5':'Drugs, Chinese Herbal',
+                                        '6':'Drug Therapy, Combination',
+                                        '7':'Medicine, Traditional',
+                                        '8':'Herbal Medicine',
+                                        '9':'Medicine, Kampo',
+                                        '10':'Medicine, Chinese Traditional',
+                                        '11':'Plants, Medicinal',
+                                        '12':'Drug Synergism',
+                                        } %}
+                                        {% if params.mesh_term in classes or params.mesh_term == '' or params.mesh_term == 'All' %}
+                                        <select class="form-control" id="mesh_term" name="mesh_term">
+                                            {% for k,v in classes %}
+                                            {% set selected = '' %}
+                                            {% if v == params.mesh_term %}
+                                            {% set selected = 'selected' %}
+                                            {% endif %}
+                                            <option value="{{v}}" {{ selected }}>{{ v }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% else %}
+                                        <input type="text" id="mesh_term" name="mesh_term" class="input-normal form-control" value="{{params.mesh_term}}">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">Drug</span>
+                                        <input type="text" id="item" name="item" class="input-normal form-control" value="{{params.item}}">
+                                    </div>
+                                </div>
+                            </div>
+                            <p></p>
+                            <div class="row">
+                                <div class="col-sm-12" style="text-align:right;">
+                                    <button type='button' class='btn btn-default btn-sm' onclick="javascript:goToPage(1);">Search</button>
+                                    <button type='button' class='btn btn-default btn-sm reset'>Reset</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="panel panel-default table-responsive">
+                    <table class="table " id="down_table">
+                        <thead>
+                            <tr class="overflow">
+                                {% for head in table_head %}
+                                {% if head.direction != '' %}
+                                <th><span style="color:{{head.color}}">{{ head.name }}</span><img id="colsort{{head.id}}" data-direction="{{head.direction}}" src="/img/sort_az_{{head.direction}}.png" height="15" onclick="javascript: apiColumnSort('{{head.id}}');return false;"></th>
+                                {% else %}
+                                <th><span style="color:{{head.color}}">{{head.name}}</span></th>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr id="row_{{item.id}}">
+                                <td class="overflow" scope="row" onclick="javascript:showModel('{{item.id}}');">
+                                    <img src="/img/json2.png" width="15px"></img>&nbsp;{{ item.id }}
+                                </td>
+                                <td><a href="http://dp2.labqr.com/e/web/news?id={{ item.dp2_id }}" target="blank">{{ item.PMID }}</a></td>
+                                <td><a href="/hdi/references?offset=0&item={{ item.item }}">{{ item.item }}</td>
+                                <td id="title_{{item.id}}">
+                                    {% if item.last_edited_by != '' %}
+                                    <span style="color:red">[{{ item.last_edited_by }}]</span>
+                                    {% endif %}
+                                    {{ item.ArticleTitle | raw }}
+                                    <span style="color:blue">[{{ item.annotation }}]</span>
+                                    {% for mesh in item.mesh %}
+                                    {% if params.mesh_term == mesh.mesh %}
+                                    <span class="badge badge-info"><a href="/hdi/references?mesh_term={{ mesh.mesh }}">{{ mesh.mesh }}</a></span>
+                                    {% else %}
+                                    <span class="badge badge-danger"><a href="/hdi/references?mesh_term={{ mesh.mesh }}">{{ mesh.mesh }}</a></span>
+                                    {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td id="class_{{item.id}}">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            {% set classes={'0':'unknown (0)','1':'HDI-related (1)','2':'un-related (2)','3':'related-review (3)','4':'DDI-related','5':'Data for TEST', '6':'HDI-related (TEST)','7':'HDI-unrelated (TEST)'} %}
+                                            {% if item.hdi_class == 0 %}
+                                            <button class="btn-sm" onclick="javascript:set_unrelated('{{ item.id }}','1');">HDI-related</button>
+                                            <button class="btn-sm" onclick="javascript:set_unrelated('{{ item.id }}','2');">un-related</button>
+                                            <button class="btn-sm" onclick="javascript:set_unrelated('{{ item.id }}','3');">related-review</button>
+                                            {% elseif item.hdi_class == 5 %}
+                                            <button class="btn-sm" onclick="javascript:set_unrelated('{{ item.id }}','6');">HDI-related (TEST)</button>
+                                            <button class="btn-sm" onclick="javascript:set_unrelated('{{ item.id }}','7');">un-related (TEST)</button>
+                                            {% else %}
+                                            {{ classes[item.hdi_class] }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{item.ai_hdi_class}}</td>
+                                <td>{{item.ai_hdi_class_2}}<br>{{item.prob_unrelated}}(U)<br>{{item.prob_related}}(R)</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <ul class="pagination" style="float:right;">
+                        <li class="disabled"><a href="#">Total {{pg.tnum}}</a></li>
+                        <li><a href="#" onclick="javascript:goToPage(1);">First</a></li>
+                        <li><a href="#" onclick="javascript:goToPage({{pg.ppg}});">Previous</a></li>
+                        <li class="disabled"><a href="#"> {{pg.cpg}} / {{pg.tpg}} </a></li>
+                        <li><a href="#" onclick="javascript:goToPage({{pg.npg}});">Next</a></li>
+                        <li><a href="#" onclick="javascript:goToPage({{pg.tpg}});">Last</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="display:none">
+            <div class="col-md-12">
+                <div class="panel panel-default" id="ifrm01">
+                    <iframe src="" name="noreferer" width="100%" height="600px" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12" style="text-align:center">
+                LabQr@2017-{{copyright_year}} All Right Reserved. <br>工信部备案号: <a href="https://beian.miit.gov.cn/">浙ICP备11022812号-5</a>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-md-12'>
+                <!-- Modal -->
+                <div class="modal fade" id="Modal_Show" data_id="" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document" style="overflow-y: initial !important; max-height:98%;  margin-top: 10px; margin-bottom:10px; width:90%;">
+                        <div class="modal-content" id="smodel">
+                            <div class="modal-footer" style="padding-bottom:0px">
+                                <div class="row" style="padding-bottom:0px">
+                                    <div class="col-sm-5">
+                                        <span style="float:left;font-style:italic;" id="modal_last_edited_by"></span>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="input-group input-group-sm">
+                                            <span id="m_PMID"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">Class</span>
+                                            {% set classes={'0':'unknown','1':'HDI-related','2':'un-related','3':'related-review','4':'DDI-related','5':'Data for TEST', '6':'HDI-related (TEST)','7':'HDI-unrelated (TEST)'} %}
+                                            <select class="form-control" id="m_hdi_class" name="m_hdi_class">
+                                                {% for k,v in classes %}
+                                                {% set selected = '' %}
+                                                {% if k == 0 %}
+                                                {% set selected = 'selected' %}
+                                                {% endif %}
+                                                <option value="{{k}}" {{ selected }}>{{ v }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="input-group input-group-sm">
+                                            <button type="button" class="btn btn-sm btn-info" id="btn_hide_ner">HideNER</button>
+                                            <button type="button" class="btn btn-sm btn-primary" id="btn_save">Save</button>
+                                            <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">Close</button>
+                                            <i class="fa fa-spinner fa-spin hide" id="btn_loading"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr style="margin-top:10px;margin-bottom:10px" />
+                            </div>
+                            <div id="svg_container" class="modal-body" style="padding-top:0px; max-height: calc(100vh - 100px); overflow-y: scroll; overflow-x: hidden">
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">Drug1</span>
+                                            <select class="form-control selectpicker" id="keys_drug" name="keys_drug" multiple>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">Herb(Drug2)</span>
+                                            <select class="form-control selectpicker" id="keys_herb" name="keys_herb" multiple>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">PK/PD</span>
+                                            <select class="form-control" id="keys_pk_pd" name="keys_pk_pd">
+                                                <option value="PK">PK interaction</option>
+                                                <option value="PD">PD interaction</option>
+                                                <option value="PK(in-vitro)">PK interaction (In Vitro)</option>
+                                                <option value="PD(in-vitro)">PD interaction (In Vitro)</option>
+                                                <option value="NotSure">NotSure(有待研究、可能、大概)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">Object</span>
+                                            <select class="form-control selectpicker" id="keys_object" name="keys_object" multiple>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">Direction</span>
+                                            <select class="form-control" id="keys_direction" name="keys_direction">
+                                                <option value="Herb->Drug" selected>Herb->Drug1</option>
+                                                <option value="Drug->Herb">Drug1->Herb</option>
+                                                <option value="Drug<->Herb">Drug1<->Herb</option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">Interaction</span>
+                                            <select class="form-control selectpicker" id="keys_interaction" name="keys_interaction" multiple>
+                                                <option value="Inhibition">Inhibition(酶抑制)</option>
+                                                <option value="Agonist">Agonist</option>
+                                                <option value="Inducer">Inducer</option>
+                                                <option value="Increase">Effect/Value Increase(效应或参数值增强、改善、提高)</option>
+                                                <option value="Decrease">Effact/Value Decrease(效应或参数值降低、减少)</option>
+                                                <option value="AderseEffectIncrease">Aderse Effect Increase(副作用增强)</option>
+                                                <option value="AderseEffectDecrease">Aderse Effect Decrease(副作用减少)</option>
+                                                <option value="Reduce">Reduce</option>
+                                                <option value="No interaction">No interaction</option>
+                                                <option value="NotSure">NotSure(有待研究、可能、大概)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">DrugAdminRoute</span>
+                                            <select class="form-control" id="keys_admin_route" name="keys_admin_route">
+                                                <option value="Oral">Oral(灌胃、口服)</option>
+                                                <option value="IV infusion">IV infusion(静脉滴注)</option>
+                                                <option value="IV bolus">IV bolus(静脉推注)</option>
+                                                <option value="Intranasal">Intranasal(鼻腔)</option>
+                                                <option value="Transdermal">Transdermal(经皮)</option>
+                                                <option value="Rectal">Rectal(直肠)</option>
+                                                <option value="Intramuscular">Intramuscular(肌肉注射)</option>
+                                                <option value="Subcutaneous">Subcutaneous(皮下注射)</option>
+                                                <option value="Sublingual">Sublingual(舌下)</option>
+                                                <option value="Intraperitoneal">Intraperitoneal(腹腔注射)</option>
+                                                <option value="Intraarterial">Intraarterial(动脉给药)</option>
+                                                <option value="Transauricular">Transauricular(经耳)</option>
+                                                <option value="IntraluminalPerfusion">Intraluminal Perfusion(腔内灌注)</option>
+                                                <option value="In-Vitro">In-Vitro(体外研究)</option>
+                                                <option value="NotSure">NotSure(有待研究、可能、大概)</option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">HerbAdminRoute</span>
+                                            <select class="form-control" id="keys_admin_route_herb" name="keys_admin_route_herb">
+                                                <option value="Oral">Oral(灌胃、口服)</option>
+                                                <option value="IV infusion">IV infusion(静脉滴注)</option>
+                                                <option value="IV bolus">IV bolus(静脉推注)</option>
+                                                <option value="Intranasal">Intranasal(鼻腔)</option>
+                                                <option value="Transdermal">Transdermal(经皮)</option>
+                                                <option value="Rectal">Rectal(直肠)</option>
+                                                <option value="Intramuscular">Intramuscular(肌肉注射)</option>
+                                                <option value="Subcutaneous">Subcutaneous(皮下注射)</option>
+                                                <option value="Sublingual">Sublingual(舌下)</option>
+                                                <option value="Intraperitoneal">Intraperitoneal(腹腔注射)</option>
+                                                <option value="Intraarterial">Intraarterial(动脉给药)</option>
+                                                <option value="Transauricular">Transauricular(经耳)</option>
+                                                <option value="IntraluminalPerfusion">Intraluminal Perfusion(腔内灌注)</option>
+                                                <option value="In-Vitro">In-Vitro(体外研究)</option>
+                                                <option value="NotSure">NotSure(有待研究、可能、大概)</option>
+                                            </select>
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">StudyTypes</span>
+                                            <select class="form-control selectpicker" id="keys_species" name="keys_species" multiple>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-addon">Conclusions</span>
+                                            <select class="form-control selectpicker" id="keys_conclusion" name="keys_conclusion">
+                                            </select>
+                                        </div>
+                                        <div class="input-group input-group-sm" style="float:right;">
+                                            <button type="button" class="btn btn-sm btn-default" id="btn_save_test">Update</button>
+                                            <button type="button" class="btn btn-sm btn-info" id="btn_save_keys">Add</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <table class="table">
+                                  <thead>
+                                    <tr>
+                                        <th scope="col">Action</th>
+                                        <th scope="col">Drug1</th>
+                                        <th scope="col">Herb</th>
+                                        <th scope="col">StudyTypes</th>
+                                        <th scope="col">DrugAdminRoute</th>
+                                        <th scope="col">HerbAdminRoute</th>
+                                        <th scope="col">PK/PD</th>
+                                        <th scope="col">Object (Diseases/PK Parameters)</th>
+                                        <th scope="col">Direction</th>
+                                        <th scope="col">Type of Action</th>
+                                        <th scope="col">Conclusion</th>
+                                        <th scope="col">User</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody id="tb_content">
+                                  </tbody>
+                                </table>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <span id="artical_title" class="poplar-annotation-title"></span>
+                                        {#ABSTRACT #}
+                                        <div id="container"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-md-4'></div>
+            <div class='col-md-4'>
+                <!-- Modal 类别选择框 -->
+                <div class="modal" id="selection_category" data_id="" tabindex="-1" role="dialog" aria-labelledby="myModalCategory">
+                    <div class="modal-dialog" role="document" style="width:30%;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title">Categories</h4>
+                                <input type='hidden' id="tmpValue1" name='tmpValue1' value=''>
+                                <input type='hidden' id="tmpValue2" name='tmpValue2' value=''>
+                            </div>
+                            <div class="modal-body">
+                                <textarea id='selected_item' style='width: 100%; height: 50px; font-family: monospace;' class='form-control'></textarea>
+                                <span>Note: 修改上面输入框内容后，会作为全称加入异名对照表。</span>
+                            </div>
+                            <div class="modal-body" id="category_options">
+                            </div>
+                            <div class="modal-footer">
+                                <div class="col-md-6" style="text-align:left;">
+                                    <button type="button" class="btn btn-default" id="btn_category_apply_to_all">Apply to All</button>
+                                    <button type="button" class="btn btn-default" id="btn_copy_selected">Copy</button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" id="btn_category_save">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-4'></div>
+        </div>
+        <div class='row'>
+            <div class='col-md-4'></div>
+            <div class='col-md-4'>
+                <!-- Modal 类别选择框 -->
+                <div class="modal" id="selection_connection" data_id="" tabindex="-1" role="dialog" aria-labelledby="myModalConnection">
+                    <div class="modal-dialog" role="document" style="width:30%;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title">Connection Types</h4>
+                            </div>
+                            <div class="modal-body" id="connection_options">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-4'></div>
+        </div>
+    </div>
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $(function() {
+            $.FroalaEditor.DefineIcon('drug', { NAME: 'adjust' });
+            $.FroalaEditor.RegisterCommand('drug', {
+                title: 'drugs',
+                focus: false,
+                undo: true,
+                refreshAfterCallback: false,
+                callback: function() {
+                    this.colors.text('#FF00FF');
+                    this.undo.saveStep();
+                    this.selection.clear();
+                }
+            });
+
+            $.FroalaEditor.DefineIcon('herb', { NAME: 'leaf' });
+            $.FroalaEditor.RegisterCommand('herb', {
+                title: 'bold herbs/extracts',
+                focus: false,
+                undo: true,
+                refreshAfterCallback: false,
+                callback: function() {
+                    this.commands.bold();
+                    this.undo.saveStep();
+                    this.selection.clear();
+                }
+            });
+
+            $.FroalaEditor.DefineIcon('species', { NAME: 'child' });
+            $.FroalaEditor.RegisterCommand('species', {
+                title: 'species yellow background',
+                focus: false,
+                undo: true,
+                refreshAfterCallback: false,
+                callback: function() {
+                    this.colors.background('#ffff00');
+                    this.undo.saveStep();
+                    this.selection.clear();
+                }
+            });
+
+            $.FroalaEditor.DefineIcon('interaction', { NAME: 'users' });
+            $.FroalaEditor.RegisterCommand('interaction', {
+                title: 'Evidence of interaction',
+                focus: false,
+                undo: true,
+                refreshAfterCallback: true,
+                callback: function() {
+                    this.colors.text('#FF1122');
+                    this.undo.saveStep();
+                    this.selection.clear();
+                }
+            });
+
+            $.FroalaEditor.DefineIcon('clean', { NAME: 'eraser' });
+            $.FroalaEditor.RegisterCommand('clean', {
+                title: 'Remove html tags of selected text',
+                focus: false,
+                undo: true,
+                refreshAfterCallback: true,
+                callback: function() {
+                    var selected = this.html.getSelected();
+                    //console.log(selected);
+                    var text = createTextVersion(selected);
+                    //console.log(text);
+                    this.html.insert(text.replace(/(\r\n|\n|\r)/gm, ""));
+                    this.undo.saveStep();
+                }
+            });
+
+            $('#title_html').froalaEditor({
+                toolbarButtons: ['undo', 'redo', '|', 'drug', 'herb', 'species', 'interaction', 'clean']
+            });
+            $('#abstract_html').froalaEditor({
+                toolbarButtons: ['undo', 'redo', '|', 'drug', 'herb', 'species', 'interaction', 'clean']
+            });
+        });
+    });
+    </script>
+    <script src='/js/hdi_js_code.js?v=1.53'></script>
+    <script src='/js/md5.js'></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+    <script src="/js/jquery.loading.min.js"></script>
+    <script src="/js/jquery.cookie.js"></script>
+    <script src="/js/textversion.js"></script>
+    <script type="text/javascript" src="/js/froala_editor.pkgd.min.js"></script>
+
+</body>
+
+</html>
